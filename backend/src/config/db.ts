@@ -1,6 +1,13 @@
 import mysql, { Pool, PoolConnection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { env } from './env';
 
+console.log('Connecting to database:', {
+  host: env.db.host,
+  port: env.db.port,
+  user: env.db.user,
+  database: env.db.database,
+});
+
 export const pool: Pool = mysql.createPool({
   host: env.db.host,
   port: env.db.port,
@@ -11,13 +18,12 @@ export const pool: Pool = mysql.createPool({
   connectionLimit: 10,
   decimalNumbers: true,
   dateStrings: ['DATE'],
-  namedPlaceholders: false
+  namedPlaceholders: false,
 });
 
 export type Row = RowDataPacket;
 export type WriteResult = ResultSetHeader;
 
-/** Run several statements atomically. Rolls back on any error. */
 export async function withTransaction<T>(fn: (conn: PoolConnection) => Promise<T>): Promise<T> {
   const conn = await pool.getConnection();
   try {

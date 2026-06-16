@@ -36,16 +36,16 @@ export const env = {
     .map((origin) => origin.trim())
     .filter(Boolean),
   db: {
-    host: required('DB_HOST', first(process.env.MYSQLHOST, fromDatabaseUrl('host'), 'localhost')),
-    port: Number(required('DB_PORT', first(process.env.MYSQLPORT, fromDatabaseUrl('port'), '3306'))),
-    user: required('DB_USER', first(process.env.MYSQLUSER, fromDatabaseUrl('user'), 'root')),
-    password: required('DB_PASSWORD', first(process.env.MYSQLPASSWORD, fromDatabaseUrl('password'), '')),
-    database: required('DB_NAME', first(process.env.MYSQLDATABASE, process.env.MYSQL_DATABASE, fromDatabaseUrl('database'), 'tripfly_erp'))
+    host: first(process.env.DB_HOST, process.env.MYSQLHOST, fromDatabaseUrl('host')) ?? 'localhost',
+    port: Number(first(process.env.DB_PORT, process.env.MYSQLPORT, fromDatabaseUrl('port')) ?? '3306'),
+    user: first(process.env.DB_USER, process.env.MYSQLUSER, fromDatabaseUrl('user')) ?? 'root',
+    password: first(process.env.DB_PASSWORD, process.env.MYSQLPASSWORD, fromDatabaseUrl('password')) ?? '',
+    database: first(process.env.DB_NAME, process.env.MYSQLDATABASE, process.env.MYSQL_DATABASE, fromDatabaseUrl('database')) ?? 'tripfly_erp',
   },
   jwt: {
     accessSecret: requiredInProduction('JWT_ACCESS_SECRET', 'dev_access_secret_change_in_production_!!'),
     refreshSecret: requiredInProduction('JWT_REFRESH_SECRET', 'dev_refresh_secret_change_in_production_!'),
     accessTtl: required('ACCESS_TOKEN_TTL', '15m'),
-    refreshTtlDays: Number(required('REFRESH_TOKEN_TTL_DAYS', '7'))
-  }
+    refreshTtlDays: Number(required('REFRESH_TOKEN_TTL_DAYS', '7')),
+  },
 };
