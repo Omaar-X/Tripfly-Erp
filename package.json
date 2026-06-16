@@ -8,7 +8,7 @@
     "npm": ">=10"
   },
   "scripts": {
-    "build": "node scripts/railway-service.mjs build",
+    "build": "npm --prefix backend install && npm --prefix backend run build",
     "start": "node scripts/railway-service.mjs start",
     "build:backend": "npm --prefix backend ci && npm --prefix backend run build",
     "start:backend": "npm --prefix backend start",
