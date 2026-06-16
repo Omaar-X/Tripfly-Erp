@@ -100,12 +100,10 @@ Create two Railway services from this repository:
 
 | Service | Root directory | Build command | Start command |
 |---|---|---|---|
-| Backend API | `backend` | `npm ci && npm run build` | `npm start` |
+| Backend API | `backend` | `npm run build` | `npm start` |
 | Frontend | `frontend` | `npm ci && npm run build` | `npm start` |
 
 The service-level `railway.json` files in `backend/` and `frontend/` define the same commands plus health checks.
-
-If an existing Railway service is still pointed at the repository root (`/`), set `SERVICE_TYPE=backend` or `SERVICE_TYPE=frontend` on that service until the root directory can be changed. The root `package.json` dispatches builds and starts to the matching sub-app as a fallback.
 
 Backend environment variables:
 
