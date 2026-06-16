@@ -1,5 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config();
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const required = (key: string, fallback?: string): string => {
   const v = process.env[key] ?? fallback;
@@ -7,16 +10,34 @@ const required = (key: string, fallback?: string): string => {
   return v;
 };
 
+const first = (...values: Array<string | undefined>): string | undefined =>
+  values.find((value) => value !== undefined && value !== '');
+
+const databaseUrl = first(process.env.DATABASE_URL, process.env.MYSQL_URL);
+const databaseUrlConfig = databaseUrl ? new URL(databaseUrl) : undefined;
+
+const fromDatabaseUrl = (field: 'host' | 'port' | 'user' | 'password' | 'database'): string | undefined => {
+  if (!databaseUrlConfig) return undefined;
+  if (field === 'host') return databaseUrlConfig.hostname;
+  if (field === 'port') return databaseUrlConfig.port;
+  if (field === 'user') return decodeURIComponent(databaseUrlConfig.username);
+  if (field === 'password') return decodeURIComponent(databaseUrlConfig.password);
+  return databaseUrlConfig.pathname.replace(/^\//, '') || undefined;
+};
+
 export const env = {
   port: Number(required('PORT', '4000')),
   nodeEnv: required('NODE_ENV', 'development'),
-  corsOrigin: required('CORS_ORIGIN', 'http://localhost:5173'),
+  corsOrigins: required('CORS_ORIGIN', 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   db: {
-    host: required('DB_HOST', 'localhost'),
-    port: Number(required('DB_PORT', '3306')),
-    user: required('DB_USER', 'root'),
-    password: required('DB_PASSWORD', ''),
-    database: required('DB_NAME', 'tripfly_erp')
+    host: required('DB_HOST', first(process.env.MYSQLHOST, fromDatabaseUrl('host'), 'localhost')),
+    port: Number(required('DB_PORT', first(process.env.MYSQLPORT, fromDatabaseUrl('port'), '3306'))),
+    user: required('DB_USER', first(process.env.MYSQLUSER, fromDatabaseUrl('user'), 'root')),
+    password: required('DB_PASSWORD', first(process.env.MYSQLPASSWORD, fromDatabaseUrl('password'), '')),
+    database: required('DB_NAME', first(process.env.MYSQLDATABASE, fromDatabaseUrl('database'), 'tripfly_erp'))
   },
   jwt: {
     accessSecret: required('JWT_ACCESS_SECRET', 'dev_access_secret_change_in_production_!!'),

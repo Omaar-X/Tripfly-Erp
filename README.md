@@ -89,10 +89,49 @@ Every controller carries JSDoc request/response examples — see `backend/src/mo
 
 ```bash
 cd backend  && npm run build && npm start        # compiles to dist/, serves :4000
-cd frontend && npm run build                     # outputs static dist/ — serve behind nginx/CDN
+cd frontend && npm run build && npm start        # serves static dist/ on $PORT
 ```
 
 Before going live: set strong `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` and a real `CORS_ORIGIN` in `backend/.env`, point `VITE_API_URL` (frontend `.env`) at your API origin, and run MySQL with regular backups.
+
+## Railway deployment
+
+Create two Railway services from this repository:
+
+| Service | Root directory | Build command | Start command |
+|---|---|---|---|
+| Backend API | `backend` | `npm ci && npm run build` | `npm start` |
+| Frontend | `frontend` | `npm ci && npm run build` | `npm start` |
+
+The service-level `railway.json` files in `backend/` and `frontend/` define the same commands plus health checks.
+
+Backend environment variables:
+
+```bash
+NODE_ENV=production
+CORS_ORIGIN=https://erp.tripflybd.com,https://<frontend-service>.up.railway.app
+JWT_ACCESS_SECRET=<strong-random-secret>
+JWT_REFRESH_SECRET=<different-strong-random-secret>
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL_DAYS=7
+```
+
+Connect the Railway MySQL database to the backend service. The API accepts Railway's native `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, and `MYSQLDATABASE` variables, plus `DATABASE_URL` / `MYSQL_URL` when available. Manual `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` still work for non-Railway deployments.
+
+Frontend environment variables:
+
+```bash
+VITE_API_URL=https://<backend-service>.up.railway.app
+```
+
+Database import order for a new/empty Railway MySQL database:
+
+```bash
+mysql "$MYSQL_URL" < database/schema.sql
+mysql "$MYSQL_URL" < database/seed.sql
+```
+
+The schema script drops and recreates application tables, so run it only on an empty database or during an intentional reset. Add `erp.tripflybd.com` as the frontend service custom domain, then point the DNS record to the Railway target shown in the domain setup screen.
 
 ## Repository layout
 
