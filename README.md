@@ -105,6 +105,8 @@ Create two Railway services from this repository:
 
 The service-level `railway.json` files in `backend/` and `frontend/` define the same commands plus health checks.
 
+If an existing Railway service is still pointed at the repository root (`/`), set `SERVICE_TYPE=backend` or `SERVICE_TYPE=frontend` on that service until the root directory can be changed. The root `package.json` dispatches builds and starts to the matching sub-app as a fallback.
+
 Backend environment variables:
 
 ```bash
